@@ -129,9 +129,10 @@ func (rbac Rbac) RemoveRole(role string) error {
 	}
 }
 
-func (rbac Rbac) RemoveUserId(userId string) error {
+func (rbac Rbac) RemoveUserIdFromAllRoles(userId string) error {
 	userId = strings.ToLower(userId)
-	q := datastore.NewQuery("identity_role").Filter("Identity =", userId).KeysOnly()
+	userKey := datastore.NewKey(rbac.c, "identity", userId, 0, nil)
+	q := datastore.NewQuery("identity_role").Filter("Identity =", userId).KeysOnly().Ancestor(userKey)
 	var idensRole []identity_role
 	if keys, err := q.GetAll(rbac.c, idensRole); err == nil {
 		return datastore.DeleteMulti(rbac.c, keys)
@@ -140,9 +141,10 @@ func (rbac Rbac) RemoveUserId(userId string) error {
 	}
 }
 
-func (rbac Rbac) RemovePermission(permission string) error {
+func (rbac Rbac) RemovePermissionFromAllRoles(permission string) error {
 	permission = strings.ToLower(permission)
-	q := datastore.NewQuery("role_permission").Filter("Permission =", permission).KeysOnly()
+	permKey := datastore.NewKey(rbac.c, "permission", permission, 0, nil)
+	q := datastore.NewQuery("role_permission").Filter("Permission =", permission).KeysOnly().Ancestor(permKey)
 	var rolePerms []role_permission
 	if keys, err := q.GetAll(rbac.c, &rolePerms); err == nil {
 		return datastore.DeleteMulti(rbac.c, keys)
