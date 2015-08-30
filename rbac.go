@@ -21,12 +21,10 @@ type Rbac struct {
 }
 
 func New(context appengine.Context) *Rbac {
-	rbac := new(Rbac)
-	rbac.c = context
-	return rbac
+	return &Rbac{context}
 }
 
-func (rbac Rbac) AddUseridsToRole(userIds []string, role string) bool {
+func (rbac *Rbac) AddUseridsToRole(userIds []string, role string) bool {
 	var keys []*datastore.Key = make([]*datastore.Key, len(userIds))
 	var obj []identity_role = make([]identity_role, len(userIds))
 	role = strings.ToLower(role)
@@ -44,7 +42,7 @@ func (rbac Rbac) AddUseridsToRole(userIds []string, role string) bool {
 	}
 }
 
-func (rbac Rbac) GivePermissionsToRole(permissions []string, role string) bool {
+func (rbac *Rbac) GivePermissionsToRole(permissions []string, role string) bool {
 	var keys []*datastore.Key = make([]*datastore.Key, len(permissions))
 	var obj []role_permission = make([]role_permission, len(permissions))
 	role = strings.ToLower(role)
@@ -61,7 +59,7 @@ func (rbac Rbac) GivePermissionsToRole(permissions []string, role string) bool {
 	}
 }
 
-func (rbac Rbac) HasPermission(userId string, permission string) bool {
+func (rbac *Rbac) HasPermission(userId string, permission string) bool {
 	permission = strings.ToLower(permission)
 	userId = strings.ToLower(userId)
 	userKey := datastore.NewKey(rbac.c, "identity", userId, 0, nil)
@@ -92,7 +90,7 @@ func (rbac Rbac) HasPermission(userId string, permission string) bool {
 	return false
 }
 
-func (rbac Rbac) RevokePermissionFromRole(permission string, role string) error {
+func (rbac *Rbac) RevokePermissionFromRole(permission string, role string) error {
 	permission = strings.ToLower(permission)
 	role = strings.ToLower(role)
 	permKey := datastore.NewKey(rbac.c, "permission", permission, 0, nil)
@@ -100,7 +98,7 @@ func (rbac Rbac) RevokePermissionFromRole(permission string, role string) error 
 	return datastore.Delete(rbac.c, key)
 }
 
-func (rbac Rbac) DeleteUserIdFromRole(userId string, role string) error {
+func (rbac *Rbac) DeleteUserIdFromRole(userId string, role string) error {
 	userId = strings.ToLower(userId)
 	role = strings.ToLower(role)
 	userKey := datastore.NewKey(rbac.c, "identity", userId, 0, nil)
@@ -108,7 +106,7 @@ func (rbac Rbac) DeleteUserIdFromRole(userId string, role string) error {
 	return datastore.Delete(rbac.c, key)
 }
 
-func (rbac Rbac) RemoveRole(role string) error {
+func (rbac *Rbac) RemoveRole(role string) error {
 	role = strings.ToLower(role)
 	q := datastore.NewQuery("role_permission").Filter("Role =", role).KeysOnly()
 	var rolePerms []role_permission
@@ -129,7 +127,7 @@ func (rbac Rbac) RemoveRole(role string) error {
 	}
 }
 
-func (rbac Rbac) RemoveUserIdFromAllRoles(userId string) error {
+func (rbac *Rbac) RemoveUserIdFromAllRoles(userId string) error {
 	userId = strings.ToLower(userId)
 	userKey := datastore.NewKey(rbac.c, "identity", userId, 0, nil)
 	q := datastore.NewQuery("identity_role").Filter("Identity =", userId).KeysOnly().Ancestor(userKey)
@@ -141,7 +139,7 @@ func (rbac Rbac) RemoveUserIdFromAllRoles(userId string) error {
 	}
 }
 
-func (rbac Rbac) RemovePermissionFromAllRoles(permission string) error {
+func (rbac *Rbac) RemovePermissionFromAllRoles(permission string) error {
 	permission = strings.ToLower(permission)
 	permKey := datastore.NewKey(rbac.c, "permission", permission, 0, nil)
 	q := datastore.NewQuery("role_permission").Filter("Permission =", permission).KeysOnly().Ancestor(permKey)
