@@ -2,6 +2,7 @@
 ## Installation
 > go get github.com/tianhai82/gae_rbac
 
+## Note! Usage guide not updated!
 ## Usage
 ```Golang
 import (
